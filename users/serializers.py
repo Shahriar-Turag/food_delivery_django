@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Restaurant, Rider, Consumer, Order
+from .models import User, Restaurant, Rider, Consumer, Order, MenuItem, MenuCategory
 
 # user serializer
 class UserSerializer(serializers.ModelSerializer):
@@ -7,17 +7,37 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'email', 'user_type']
 
+# menu item serializer
+class MenuItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MenuItem
+        fields = ['id', 'name', 'description', 'price']
+
+
+# Menu category serializer
+        
+class MenuCategorySerializer(serializers.ModelSerializer):
+    items = MenuItemSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = MenuCategory
+        fields = ['id', 'name', 'items']
+
 # restaurant serializer
 class RestaurantSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    categories = MenuCategorySerializer(many=True, read_only=True)
+
     class Meta:
         model = Restaurant
-        fields = '__all__'
+        fields = ['id', 'restaurant_name', 'restaurant_location', 'user', 'categories']
 
 # rider serializer
 class RiderSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use the UserSerializer to nest user details
     class Meta:
         model = Rider
-        fields = '__all__'
+        fields = ['id', 'user']
 
 # order serializer
 class OrderSerializer(serializers.ModelSerializer):
@@ -27,9 +47,10 @@ class OrderSerializer(serializers.ModelSerializer):
 
 # consumer serializer
 class ConsumerSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use the UserSerializer to nest user details
     class Meta:
         model = Consumer
-        fields = '__all__'
+        fields = ['id', 'user']
 
 
 # restaurant registration serializer
