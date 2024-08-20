@@ -21,4 +21,5 @@ urlpatterns = [
     path('register/rider/', RegisterRiderView.as_view(), name='register_rider'),
     path('register/consumer/', RegisterConsumerView.as_view(), name='register_consumer'),
     path('login/', LoginView.as_view(), name='login'),
+    path('api/categories/', MenuCategoryViewSet.as_view({'get': 'list'}), name='categories'),
 ]
