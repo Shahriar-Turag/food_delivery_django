@@ -3,6 +3,11 @@ from django.db import models
 from .managers import CustomUserManager  # Import the custom user manager
 
 # Custom User model
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from .managers import CustomUserManager  # Import your custom user manager
+from django.utils import timezone
+
 class User(AbstractUser):
     USER_TYPES = (
         ('restaurant', 'Restaurant'),
@@ -11,27 +16,32 @@ class User(AbstractUser):
         ('admin', 'Admin'),
     )
 
+    username = models.CharField(max_length=150, blank=True, null=True, unique=False)  # Allow username to be blank
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     user_type = models.CharField(max_length=10, choices=USER_TYPES)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     objects = CustomUserManager()
 
-
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'user_type', 'password']
+    USERNAME_FIELD = 'email'  # Use email as the unique identifier
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'user_type', 'password ']
 
     def __str__(self):
         return self.email
 
+
 # Restaurant model
 class Restaurant(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    restaurant_name = models.CharField(max_length=255)  # This corresponds to restaurant_name in registration
-    restaurant_location = models.CharField(max_length=255)  # This corresponds to restaurant_location in registration
+    restaurant_name = models.CharField(max_length=255)
+    restaurant_location = models.CharField(max_length=255)  
+    verified = models.BooleanField(default=False)
 
     def __str__(self):
-        return  self.restaurant_name  # Returns the restaurant name instead of username
+        return  self.restaurant_name  
 
 # Menu category model
     
@@ -44,10 +54,20 @@ class MenuCategory(models.Model):
     
 # Menu item model
 class MenuItem(models.Model):
+    STATUS_TYPES = (
+        ('active', 'Active'),
+        ('archived', 'Archived'),
+        ('draft', 'Draft'),
+    )
     category = models.ForeignKey(MenuCategory, on_delete=models.CASCADE, related_name='items')
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='menu_items/', blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_TYPES, default='active')
+    total_sales = models.IntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    
 
     def __str__(self):
         return self.name
@@ -75,7 +95,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     delivery_address = models.TextField()
-    placed_at = models.DateTimeField(auto_now_add=True)
+    placed_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f'Order {self.id} - {self.status}'

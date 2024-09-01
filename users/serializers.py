@@ -5,32 +5,33 @@ from .models import User, Restaurant, Rider, Consumer, Order, MenuItem, MenuCate
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'user_type']
+        fields = ['id', 'first_name', 'last_name', 'email', 'user_type', 'phone_number', 'image']
 
 # menu item serializer
 class MenuItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuItem
-        fields = ['id', 'name', 'description', 'price']
+        fields = ['id', 'name', 'description', 'price', 'image', 'status', 'total_sales', 'created_at']
 
 
 # Menu category serializer
         
 class MenuCategorySerializer(serializers.ModelSerializer):
     items = MenuItemSerializer(many=True, read_only=True)
-    
+    restaurant = serializers.PrimaryKeyRelatedField(read_only=True)
+
     class Meta:
         model = MenuCategory
-        fields = ['id', 'name', 'items']
+        fields = ['id', 'name', 'restaurant', 'items']
 
 # restaurant serializer
 class RestaurantSerializer(serializers.ModelSerializer):
     user = UserSerializer()
-    categories = MenuCategorySerializer(many=True, read_only=True)
+    categories = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Restaurant
-        fields = ['id', 'restaurant_name', 'restaurant_location', 'user', 'categories']
+        fields = ['id', 'restaurant_name', 'restaurant_location', 'user', 'categories', 'verified']
 
 # rider serializer
 class RiderSerializer(serializers.ModelSerializer):
@@ -57,10 +58,11 @@ class ConsumerSerializer(serializers.ModelSerializer):
 class RestaurantRegistrationSerializer(serializers.ModelSerializer):
     restaurant_name = serializers.CharField(write_only=True)  # Explicitly add this field for input only
     restaurant_location = serializers.CharField(write_only=True)  # Explicitly add this field for input only
+    verified = serializers.BooleanField(read_only=True)  # Set verified to True by default
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'user_type', 'restaurant_name', 'restaurant_location']
+        fields = ['first_name', 'last_name', 'email', 'password', 'user_type', 'restaurant_name', 'restaurant_location', 'verified', 'phone_number']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -86,6 +88,7 @@ class RestaurantRegistrationSerializer(serializers.ModelSerializer):
             restaurant = Restaurant.objects.get(user=instance)
             representation['restaurant_name'] = restaurant.restaurant_name
             representation['restaurant_location'] = restaurant.restaurant_location
+            representation['verified'] = restaurant.verified
         except Restaurant.DoesNotExist:
             pass  # Skip adding restaurant_name and restaurant_location if not available
         return representation
