@@ -92,6 +92,14 @@ class MenuCategoryViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+    
+    def update(self, request, *args, **kwargs):
+        category_id = kwargs.get('pk')
+        category = self.get_object()  # Retrieves the category object
+        category.name = request.data.get('name', category.name)  # Updates the name
+        category.save()
+        serializer = self.get_serializer(category)
+        return Response(serializer.data)
 
 
 # Menu item viewset
@@ -106,6 +114,17 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(category=category)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            return Response({"message": "Item deleted successfully."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def perform_destroy(self, instance):
+        instance.delete()
 
 class RiderViewSet(viewsets.ModelViewSet):
     queryset = Rider.objects.all()

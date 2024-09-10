@@ -9,9 +9,12 @@ class UserSerializer(serializers.ModelSerializer):
 
 # menu item serializer
 class MenuItemSerializer(serializers.ModelSerializer):
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S', read_only=True)  # Format the datetime
+
     class Meta:
         model = MenuItem
-        fields = ['id', 'name', 'description', 'price', 'image', 'status', 'total_sales', 'created_at']
+        fields = ['id', 'name', 'description', 'price', 'image', 'status', 'total_sales', 'created_at', 'category_name', 'category']
 
 
 # Menu category serializer

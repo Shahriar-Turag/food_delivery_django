@@ -23,5 +23,6 @@ urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),
     path('api/categories/', MenuCategoryViewSet.as_view({'get': 'list'}), name='categories'),
     path('api/restaurants/', MenuCategoryViewSet.as_view({'get': 'list'}), name='categories'),
+    path('api/items/', MenuItemViewSet.as_view({'get': 'list'}), name='items'),
 
 ]
